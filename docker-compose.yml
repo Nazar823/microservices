@@ -3,9 +3,7 @@ networks:
   app:
 services:
   gateway:
-    build: ""
-    volumes:
-      - ./:/app
+    build: gateway-service
     environment:
       MY_PORT: 5004
       REGISTRATION_SERVICE: http://registration:5001

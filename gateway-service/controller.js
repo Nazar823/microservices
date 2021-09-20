@@ -10,6 +10,7 @@ module.exports.postRequests = async (req, res) => {
             const requestToService = await axios.post(host + req.url, req.body, {headers: req.headers})
             return res.status(requestToService.status).json(requestToService.data)
         } catch (error){
+            console.log(error.response)
             return res.status(statusErr.code).json(error.response.data)
         }
     }
