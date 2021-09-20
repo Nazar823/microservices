@@ -1,0 +1,107 @@
+version: '3.1'
+networks:
+  app:
+services:
+  gateway:
+    build: ""
+    volumes:
+      - ./:/app
+    environment:
+      MY_PORT: 5004
+      REGISTRATION_SERVICE: http://registration:5001
+      BLOG_SERVICE: http://blog:5002
+      MESSAGE_SERVICE: http://message:5003
+    restart: always
+    ports:
+      - 5004:5004
+  auth_db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: nazar
+      POSTGRES_PASSWORD: ignatenko123
+      POSTGRES_DB: users_auth
+    ports:
+      - 5011:5432
+    volumes:
+      - auth_db_vol:/var/lib/postgresql/data
+  blog_db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: nazar
+      POSTGRES_PASSWORD: ignatenko123
+      POSTGRES_DB: blog_db
+    ports:
+      - 5012:5432
+    volumes:
+      - blog_db_vol:/var/lib/postgresql/data
+  message_db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: nazar
+      POSTGRES_PASSWORD: ignatenko123
+      POSTGRES_DB: message_db
+    ports:
+      - 5013:5432
+    volumes:
+      - message_db_vol:/var/lib/postgresql/data
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+  message:
+    build: message-service
+    command: npm start
+    environment:
+      DB_USER: nazar
+      DB_NAME: message_db
+      DB_PASSWORD: ignatenko123
+      DIALECT: postgres
+      HOST: message_db
+      MY_PORT: 5003
+      REGISTRATION_SERVICE: http://registration:5001
+      GET_USERNAME: /api/auth/getUserName
+    restart: always
+    ports:
+      - 5003:5003
+    depends_on:
+      - message_db
+  blog:
+    build: blog-service
+    command: npm start
+    environment:
+      REGISTRATION_SERVICE: http://registration:5001
+      AUTHORIZATION: /api/auth/authorization
+      DB_USER: nazar
+      DB_NAME: blog_db
+      DB_PASSWORD: ignatenko123
+      DIALECT: postgres
+      HOST: blog_db
+      MY_PORT: 5002
+    restart: always
+    ports:
+      - 5002:5002
+    depends_on:
+      - blog_db
+  registration:
+    build: registration-service
+    command: npm start
+    environment:
+      DB_USER: nazar
+      DB_NAME: users_auth
+      DB_PASSWORD: ignatenko123
+      DIALECT: postgres
+      HOST: auth_db
+      MY_PORT: 5001
+    restart: always
+    ports:
+      - 5001:5001
+    depends_on:
+      - auth_db
+volumes:
+  auth_db_vol:
+  blog_db_vol:
+  message_db_vol:
